@@ -4,6 +4,10 @@ import "./index.scss";
 
 function App() {
     const [rates, setRates] = useState({});
+    const [fromCurrency, setFromCurrency] = useState("RUB");
+    const [toCurrency, setToCurrency] = useState("USD");
+    const [toValue, setToValue] = useState(0);
+    const [fromValue, setFromValue] = useState(0);
 
     const myHeaders = new Headers();
     myHeaders.append("apikey", "ViVmIveXTxsh0IXkTljsUgEY5bm7ea05");
@@ -15,7 +19,7 @@ function App() {
     };
     useEffect(() => {
         fetch(
-            "https://api.apilayer.com/fixer/latest?symbols=RUB%2CEUR%2CGBP&base=USD",
+            "https://api.apilayer.com/fixer/latest?symbols=RUB%2CEUR%2CGBP%2CUSD&base=USD",
             requestOptions
         )
             .then((res) => res.json())
@@ -30,14 +34,35 @@ function App() {
             });
     }, []);
 
+    const onChangeFromValue = (value) => {
+        const price = value / rates[fromCurrency];
+        const result = price * rates[toCurrency];
+        setToValue(result);
+        setFromValue(value);
+    };
+    const onChangeToValue = (value) => {
+        const result = (rates[fromCurrency] / rates[toCurrency]) * value;
+        setFromValue(result);
+        setToValue(value);
+    };
+    useEffect(() => {
+        onChangeFromValue(fromValue);
+    }, [fromCurrency, fromValue, onChangeFromValue]);
+
     return (
         <div className="App">
             <Block
-                value={0}
-                currency="RUB"
-                onChangeCurrency={(cur) => console.log(cur)}
+                value={fromValue}
+                currency={fromCurrency}
+                onChangeCurrency={setFromCurrency}
+                onChangeValue={onChangeFromValue}
             />
-            <Block value={0} currency="USD" />
+            <Block
+                value={toValue}
+                currency={toCurrency}
+                onChangeCurrency={setToCurrency}
+                onChangeValue={onChangeToValue}
+            />
         </div>
     );
 }
